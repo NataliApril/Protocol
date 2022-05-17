@@ -68,6 +68,8 @@ byte count_1_BLA = 0;
 byte tpm_coord_count = 0;
 byte tpm_ori_count = 0;
 byte count_tpm_num = 0;
+byte waiting_action_BLA = 0;
+byte waiting_action_NKR = 0;
 
 //определния для передачи пакетов
 String input_string = "";
@@ -93,7 +95,8 @@ static bool exist = false;
 //crc полученног пакета для отправки отклика на НКР
 byte crc_pack = 0;
 //Создаем массив с пакетом, для текущей работы
-byte packet_sender [35];
+byte packet_sender_BLA [35];
+byte packet_sender_NKR [35];
 
 byte tpm_pack_BLA[35];
 //массив с координатами точки интереса
@@ -102,7 +105,8 @@ byte coord_tpm[35];
 
 byte tpm_count = 0;
 
-byte f = 0;
+byte f_NKR = 0;
+byte f_BLA = 0;
 
 float coords[3] = {0, 0, 0};
 
