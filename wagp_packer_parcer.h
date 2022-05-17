@@ -391,7 +391,7 @@ class unpacker
             }
             SERIAL_TM.print("\t");
             SERIAL_TM.println(pack_bytes[3], HEX);
-            //unpack(pack_bytes);
+            unpack(pack_bytes);
             i -= 1;
             status = 0;
             reset_pack();
@@ -733,6 +733,84 @@ class unpacker
       //Функция возвращающая Id пакета отклика
       return data[6];
     };
+
+    //Функция ожидания определенного пакета от БЛА
+    bool BLA_take_id(byte pack_id)
+    {
+      //static byte count_step = 6;
+      exist = false;
+      //Получили массив id  пришедших пакетов в массив array_BLA
+      byte* array_BLA = find_pack("BLA");
+      for (byte s = 0; s < 5; s++)
+      {
+        if (array_BLA[s] == pack_id)
+        {
+          exist = true;
+          //      SERIAL_TM.println();
+          //      SERIAL_TM.println("array_BLA[s] = " + String(array_BLA[s], HEX));
+          array_BLA[s] = 0;
+          //      SERIAL_TM.println("array_BLA[s] = " + String(array_BLA[s], HEX));
+          for (byte g = 0; g < 35; g++)
+          {
+            big_array_BLA[s][g] = 0;
+          }
+          break;
+        }
+      }
+      return exist;
+    };
+
+    //Функция ожидания определенного пакета от БЛА c id пакета
+    bool BLA_take_id(byte pack_id, byte wait_pack_id)
+    {
+      //static byte count_step = 6;
+      exist = false;
+      //Получили массив id  пришедших пакетов в массив array_BLA
+      byte* array_BLA = find_pack("BLA");
+
+      for (byte s = 0; s < 5; s++)
+      {
+        if (array_BLA[s] == pack_id)
+        {
+          //Если мы ищем пакет отклика, то проверяем еще и его содержимое
+          //проверяем, совпадают ли id ожидаемого пакета
+          if (pack_id == PDR_ID)
+          {
+            byte arr[35];
+            for (byte v = 0; v < 35; v++)
+            {
+              arr[v] = big_array_BLA[s][v];
+            }
+            byte wait_id = waiting_pack_id(arr);
+            if (wait_id == wait_pack_id)
+            {
+              exist = true;
+            } else
+            {
+              exist = false;
+            }
+          } else
+          {
+            exist = true;
+          }
+          array_BLA[s] = 0;
+          for (byte g = 0; g < 35; g++)
+          {
+            big_array_BLA[s][g] = 0;
+          }
+          break;
+        }
+      }
+      return exist;
+    };
+
+
+    void take_packs()
+    {
+      //Получили массив id  пришедших пакетов в массив array_NKR
+      byte* array_NKR = find_pack("NKR");
+    };
+
 };
 
 
@@ -754,7 +832,7 @@ class wagp_sender
             short_msg_union msg;
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            //            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             //            SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
@@ -770,7 +848,7 @@ class wagp_sender
             short_msg_union msg;
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            //            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             //            SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
@@ -810,7 +888,7 @@ class wagp_sender
             short_msg_union msg;
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            //            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             //            SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }

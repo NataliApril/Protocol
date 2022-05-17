@@ -23,6 +23,8 @@
 #define NPM_ID 0xA8
 #define TPM_ID 0xA9
 #define PDR_ID 0xE0
+//запрос на получение пакета NPM
+#define TNP_ID 0xC0
 
 #define MCM_LENGTH 12
 #define NPM_LENGTH 24
