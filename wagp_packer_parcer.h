@@ -740,15 +740,15 @@ class unpacker
       //static byte count_step = 6;
       exist = false;
       //Получили массив id  пришедших пакетов в массив array_BLA
-      byte* array_BLA = find_pack("BLA");
+      byte* array_BLA_id = find_pack("BLA");
       for (byte s = 0; s < 5; s++)
       {
-        if (array_BLA[s] == pack_id)
+        if (array_BLA_id[s] == pack_id)
         {
           exist = true;
           //      SERIAL_TM.println();
           //      SERIAL_TM.println("array_BLA[s] = " + String(array_BLA[s], HEX));
-          array_BLA[s] = 0;
+          array_BLA_id[s] = 0;
           //      SERIAL_TM.println("array_BLA[s] = " + String(array_BLA[s], HEX));
           for (byte g = 0; g < 35; g++)
           {
@@ -766,11 +766,11 @@ class unpacker
       //static byte count_step = 6;
       exist = false;
       //Получили массив id  пришедших пакетов в массив array_BLA
-      byte* array_BLA = find_pack("BLA");
+      byte* array_BLA_id = find_pack("BLA");
 
       for (byte s = 0; s < 5; s++)
       {
-        if (array_BLA[s] == pack_id)
+        if (array_BLA_id[s] == pack_id)
         {
           //Если мы ищем пакет отклика, то проверяем еще и его содержимое
           //проверяем, совпадают ли id ожидаемого пакета
@@ -793,7 +793,7 @@ class unpacker
           {
             exist = true;
           }
-          array_BLA[s] = 0;
+          array_BLA_id[s] = 0;
           for (byte g = 0; g < 35; g++)
           {
             big_array_BLA[s][g] = 0;
