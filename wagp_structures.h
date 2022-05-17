@@ -39,10 +39,12 @@ byte big_array_BLA [5][35];
 //счетчик количества осмотренных точек
 byte RTM_count = 0;
 
+const int number_of_packets = 12;
+
 //Массивы с данными о пакетах
-byte id[11]     = {CTT_ID, TCM_ID, RTM_ID, MCM_ID, LRQ_ID, RTL_ID, CTL_ID, LCM_ID, NPM_ID, TPM_ID, PDR_ID};
-byte lenght_NKR[11] = {0, 0, 0, MCM_LENGTH, 0, 0, 0, 0, NPM_LENGTH, TPM_LENGTH_NKR, SHORT_MSG_LEN};
-byte lenght_BLA[11] = {0, 0, 0, MCM_LENGTH, 0, 0, 0, 0, NPM_LENGTH, TPM_LENGTH_BLA, SHORT_MSG_LEN};
+byte id[number_of_packets] = {CTT_ID, TCM_ID, RTM_ID, MCM_ID, LRQ_ID, RTL_ID, CTL_ID, LCM_ID, NPM_ID, TPM_ID, PDR_ID, TNP_ID};
+byte lenght_NKR[number_of_packets] = {0, 0, 0, MCM_LENGTH, 0, 0, 0, 0, NPM_LENGTH, TPM_LENGTH_NKR, SHORT_MSG_LEN, 0};
+byte lenght_BLA[number_of_packets] = {0, 0, 0, MCM_LENGTH, 0, 0, 0, 0, NPM_LENGTH, TPM_LENGTH_BLA, SHORT_MSG_LEN, 0};
 
 //переменные дл выбоора режимов передачи пакета
 boolean Manual = false;
