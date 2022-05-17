@@ -18,13 +18,7 @@ void loop()
 {
   //BLA_unpacker.take_packs();
   NKR_send();
-
-  if (BLA_unpacker.BLA_take_id(LRQ_ID))
-  {
-    //    SERIAL_TM.println("LRQ pack");
-    short_msg_union msg = BLA_packer.pack_lrq();
-    SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
-  }
+  BLA_send();
 }
 
 
@@ -57,7 +51,7 @@ void NKR_send(void)
     {
       case (CTT_ID):          //"Взлет разрешен"
         {
-          if (waiting_action_BLA == action_NKR)
+          if (waiting_action_NKR == action_NKR)
           {
             crc_pack = packet_sender_NKR[6];
             //SERIAL_BLA.println("crc_pack" + crc_pack);
@@ -74,6 +68,9 @@ void NKR_send(void)
             SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
             //SERIAL_TM.println("PRC отправлен на НКР");
 
+            //Запоминаем одижаемое действие от БЛА
+            waiting_action_BLA = TCM_ID;
+
             //Поле отработки case с нужным id, занулем его в массиве
             //чтобы запомнить, что он выполнен
             array_NKR[f_NKR] = 0;
@@ -81,9 +78,8 @@ void NKR_send(void)
             for (byte t = 0; t < 35; t++) {
               big_array_NKR[f_NKR][t] = 0;
             }
-            //Запоминаем одижаемое действие от БЛА
-            waiting_action_BLA = TCM_ID;
-          } 
+
+          }
           else {}
           break;
         }
@@ -97,79 +93,63 @@ void NKR_send(void)
         }
       case (RTM_ID):          //"Начало движения"
         {
-          crc_pack = packet_sender_NKR[6];
-
-          while (!BLA_unpacker.BLA_take_id(PDR_ID, RTM_ID))
+          if (waiting_action_NKR == action_NKR)
           {
-            //Отправляем пакет на БЛА
-            BLA_sender.send_to_BLA(packet_sender_NKR);
-          }
-          //          SERIAL_TM.println("Отправлен RTM на БЛА");
+            crc_pack = packet_sender_NKR[6];
 
-          //Отправляем отклик о получении на НКР
-          pack_recived_union msg = BLA_packer.pack_pdr(RTM_ID, crc_pack);
-          SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
-          SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+            while (!BLA_unpacker.BLA_take_id(PDR_ID, RTM_ID))
+            {
+              //Отправляем пакет на БЛА
+              BLA_sender.send_to_BLA(packet_sender_NKR);
+            }
+            //SERIAL_TM.println("Отправлен RTM на БЛА");
 
-          while (!BLA_unpacker.BLA_take_id(RTM_ID))
-          {}
-          short_msg_union msg_NKR = BLA_packer.pack_rtm();
-          SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
-          SERIAL_TM.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
-          //Ожидаем окончания осмотра точки
-          while (!BLA_unpacker.BLA_take_id(MCM_ID))
-          {}
-          pack_recived_union msg_BLA = BLA_packer.pack_pdr(MCM_ID, 0);                 //отправляю "пакет получен"
-          SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
-          SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
-          //          SERIAL_TM.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
+            //Отправляем отклик о получении на НКР
+            pack_recived_union msg = BLA_packer.pack_pdr(RTM_ID, crc_pack);
+            SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
+            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
 
-          mcm_msg_union msg_NKR_2 = BLA_packer.pack_mcm(coords);
-          SERIAL_NKR.write(msg_NKR_2.byte_form, sizeof(msg_NKR_2.byte_form));
-          SERIAL_TM.write(msg_NKR_2.byte_form, sizeof(msg_NKR_2.byte_form));
+            //Запоминаем одижаемое действие от НКР
+            waiting_action_NKR = MCM_ID;
 
-          if (BLA_unpacker.BLA_take_id(LRQ_ID))
-          {
-            msg_BLA = BLA_packer.pack_pdr(LRQ_ID, 0);                           //отправляю "пакет получен"
-            SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
-            SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
-            //            SERIAL_TM.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
-            //            SERIAL_TM.println("Запрос на посадку");
-            msg_NKR = BLA_packer.pack_lrq();
-            SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
-          }
-
-          //Поcле отработки case с нужным id, занулем его в массиве
-          //чтобы запомнить, что он выполнен
-          array_NKR[f_NKR] = 0;
-          //Отчищаем строку массива, с обработанным пакетом
-          for (byte t = 0; t < 35; t++) {
-            big_array_NKR[f_NKR][t] = 0;
-          }
+            //Поcле отработки case с нужным id, занулем его в массиве
+            //чтобы запомнить, что он выполнен
+            array_NKR[f_NKR] = 0;
+            //Отчищаем строку массива, с обработанным пакетом
+            for (byte t = 0; t < 35; t++) {
+              big_array_NKR[f_NKR][t] = 0;
+            }
+          } else {}
           break;
         }
-      case (MCM_ID):          //"Осмотр завершен"
+      case (MCM_ID):                                    //"Осмотр завершен"
         {
-          crc_pack = packet_sender_NKR[18];
-          while (!BLA_unpacker.BLA_take_id(PDR_ID, MCM_ID))
+          if (waiting_action_NKR == action_NKR)
           {
-            //Отправляем пакет на БЛА
-            BLA_sender.send_to_BLA(packet_sender_NKR);
-            //            SERIAL_TM.println("Отправляю МСМ");
-          }
-          //crc_pack = packet_sender[6];
-          //Поле отработки case с нужным id, занулем его в массиве
-          //чтобы запомнить, что он выполнен
-          array_NKR[f_NKR] = 0;
-          pack_recived_union msg = BLA_packer.pack_pdr(MCM_ID, crc_pack);
-          SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
-          //Отчищаем строку массива, с обработанным пакетом
-          for (byte t = 0; t < 35; t++) {
-            big_array_NKR[f_NKR][t] = 0;
-          }
+            crc_pack = packet_sender_NKR[18];
+            while (!BLA_unpacker.BLA_take_id(PDR_ID, MCM_ID))
+            {
+              //Отправляем пакет на БЛА
+              BLA_sender.send_to_BLA(packet_sender_NKR);
+              //SERIAL_TM.println("Отправляю МСМ");
+            }
+            //Запоминаем одижаемое действие от БЛА
+            waiting_action_NKR = RTM_ID;
+
+            pack_recived_union msg = BLA_packer.pack_pdr(MCM_ID, crc_pack);
+            SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
+
+            //Поле отработки case с нужным id, занулем его в массиве
+            //чтобы запомнить, что он выполнен
+            array_NKR[f_NKR] = 0;
+            //Отчищаем строку массива, с обработанным пакетом
+            for (byte t = 0; t < 35; t++) {
+              big_array_NKR[f_NKR][t] = 0;
+            }
+          } else {}
           break;
         }
-      case (LRQ_ID):          //"Запрос на посадку"
+      case (LRQ_ID):                                                  //"Запрос на посадку"
         {
           //Поле отработки case с нужным id, занулем его в массиве
           //чтобы запомнить, что он выполнен
@@ -185,28 +165,28 @@ void NKR_send(void)
         }
       case (CTL_ID):          //"Посадка разрешена"
         {
-          crc_pack = packet_sender_NKR[6];
-
-          while (!BLA_unpacker.BLA_take_id(PDR_ID, CTL_ID))
+          if (waiting_action_NKR == action_NKR)
           {
-            //Отправляем пакет на БЛА
-            BLA_sender.send_to_BLA(packet_sender_NKR);
-          }
-          //Поле отработки case с нужным id, занулем его в массиве
-          //чтобы запомнить, что он выполнен
-          array_NKR[f_NKR] = 0;
-          //Отправляем отклик о получении на НКР
-          pack_recived_union msg = BLA_packer.pack_pdr(CTL_ID, crc_pack);
-          SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
-          //Отчищаем строку массива, с обработанным пакетом
-          for (byte t = 0; t < 35; t++) {
-            big_array_NKR[f_NKR][t] = 0;
-          }
+            crc_pack = packet_sender_NKR[6];
+            while (!BLA_unpacker.BLA_take_id(PDR_ID, CTL_ID))
+            {
+              //Отправляем пакет на БЛА
+              BLA_sender.send_to_BLA(packet_sender_NKR);
+            }
+            //Запоминаем ожидаемое действие БЛА
+            waiting_action_BLA == LCM_ID;
 
-          while (!BLA_unpacker.BLA_take_id(LCM_ID))
-          {}
-          short_msg_union msg_NKR = BLA_packer.pack_lcm();
-          SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
+            //Поле отработки case с нужным id, занулем его в массиве
+            //чтобы запомнить, что он выполнен
+            array_NKR[f_NKR] = 0;
+            //Отправляем отклик о получении на НКР
+            pack_recived_union msg = BLA_packer.pack_pdr(CTL_ID, crc_pack);
+            SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
+            //Отчищаем строку массива, с обработанным пакетом
+            for (byte t = 0; t < 35; t++) {
+              big_array_NKR[f_NKR][t] = 0;
+            }
+          } else {}
           break;
         }
       case (LCM_ID):          //"Посадка завершена"
@@ -342,6 +322,7 @@ void NKR_send(void)
             }
           }
           count_tpm_num += 1;
+
           //Ожидаемый пакет от НКР
           waiting_action_NKR = CTT_ID;
 
@@ -416,7 +397,13 @@ void BLA_send()
   {
     case (CTT_ID):
       {
-
+        //Поле отработки case с нужным id, занулем его в массиве
+        //чтобы запомнить, что он выполнен
+        array_BLA[f_BLA] = 0;
+        //Отчищаем строку массива, с обработанным пакетом
+        for (byte t = 0; t < 35; t++) {
+          big_array_BLA[f_BLA][t] = 0;
+        }
         break;
       }
     case (TCM_ID):
@@ -452,6 +439,30 @@ void BLA_send()
       }
     case (RTM_ID):
       {
+        if (waiting_action_BLA == action_BLA)
+        {
+          pack_recived_union msg_BLA = BLA_packer.pack_pdr(RTM_ID, 0);                 //отправляю "пакет получен"
+          SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
+          SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
+
+          short_msg_union msg_NKR = BLA_packer.pack_rtm();
+          SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
+          SERIAL_TM.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
+
+          //Запоминаем ожидаемое действие БЛА
+          waiting_action_BLA = MCM_ID;
+
+          //Ожидаем отклика  о получении RTM от БЛА на НКР
+          //waiting_action_BLA = PDR_ID;
+
+          //Поле отработки case с нужным id, занулем его в массиве
+          //чтобы запомнить, что он выполнен
+          array_BLA[f_BLA] = 0;
+          //Отчищаем строку массива, с обработанным пакетом
+          for (byte t = 0; t < 35; t++) {
+            big_array_BLA[f_BLA][t] = 0;
+          }
+        } else {}
         break;
       }
 
@@ -470,6 +481,9 @@ void BLA_send()
           //SERIAL_TM.println("Отправлен МСМ на НКР");
           //SERIAL_NKR.write(msg_NKR_2.byte_form, sizeof(msg_NKR_2.byte_form));
 
+          //Следующий ожидаемый пакет от БЛА
+          waiting_action_BLA = RTM_ID;
+
           //Поле отработки case с нужным id, занулем его в массиве
           //чтобы запомнить, что он выполнен
           array_BLA[f_BLA] = 0;
@@ -483,22 +497,81 @@ void BLA_send()
       }
     case (LRQ_ID):
       {
+        pack_recived_union msg_BLA_2 = BLA_packer.pack_pdr(LRQ_ID, 0);                 //отправляю "пакет получен"
+        SERIAL_BLA.write(msg_BLA_2.byte_form, sizeof(msg_BLA_2.byte_form));
+
+        short_msg_union msg = BLA_packer.pack_lrq();
+        SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
+
+        //Запоминаем ожидаемое действие от НКР
+        waiting_action_NKR = CTL_ID;
+
+        //Поле отработки case с нужным id, занулем его в массиве
+        //чтобы запомнить, что он выполнен
+        array_BLA[f_BLA] = 0;
+        //Отчищаем строку массива, с обработанным пакетом
+        for (byte t = 0; t < 35; t++) {
+          big_array_BLA[f_BLA][t] = 0;
+        }
+        break;
+      }
+    case (LCM_ID):
+      {
+        if (waiting_action_BLA == action_BLA)
+        {
+          pack_recived_union msg_BLA_2 = BLA_packer.pack_pdr(LCM_ID, 0);                 //отправляю "пакет получен"
+          SERIAL_BLA.write(msg_BLA_2.byte_form, sizeof(msg_BLA_2.byte_form));
+
+          short_msg_union msg_NKR = BLA_packer.pack_lcm();
+          SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
+
+          waiting_action_BLA == 0;
+          waiting_action_NKR == 0;
+        } else {}
         break;
       }
     case (RTL_ID):
       {
+        //Поле отработки case с нужным id, занулем его в массиве
+        //чтобы запомнить, что он выполнен
+        array_BLA[f_BLA] = 0;
+        //Отчищаем строку массива, с обработанным пакетом
+        for (byte t = 0; t < 35; t++) {
+          big_array_BLA[f_BLA][t] = 0;
+        }
         break;
       }
     case (NPM_ID):
       {
+        //Поле отработки case с нужным id, занулем его в массиве
+        //чтобы запомнить, что он выполнен
+        array_BLA[f_BLA] = 0;
+        //Отчищаем строку массива, с обработанным пакетом
+        for (byte t = 0; t < 35; t++) {
+          big_array_BLA[f_BLA][t] = 0;
+        }
         break;
       }
     case (TPM_ID):
       {
+        //Поле отработки case с нужным id, занулем его в массиве
+        //чтобы запомнить, что он выполнен
+        array_BLA[f_BLA] = 0;
+        //Отчищаем строку массива, с обработанным пакетом
+        for (byte t = 0; t < 35; t++) {
+          big_array_BLA[f_BLA][t] = 0;
+        }
         break;
       }
     case (PDR_ID):
       {
+        //Поле отработки case с нужным id, занулем его в массиве
+        //чтобы запомнить, что он выполнен
+        array_BLA[f_BLA] = 0;
+        //Отчищаем строку массива, с обработанным пакетом
+        for (byte t = 0; t < 35; t++) {
+          big_array_BLA[f_BLA][t] = 0;
+        }
         break;
       }
   }
