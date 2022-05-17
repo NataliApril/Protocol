@@ -40,10 +40,10 @@ void NKR_send(void)
       for (byte r = 0; r < 35; r++)
       {
         packet_sender_NKR[r] = big_array_NKR[f_NKR][r];
-        //        SERIAL_TM.print(packet_sender[r], HEX);
-        //        SERIAL_TM.print("\t");
+        //SERIAL_TM.print(packet_sender[r], HEX);
+        //SERIAL_TM.print("\t");
       }
-      //      SERIAL_TM.println();
+      //SERIAL_TM.println();
     }
     else {}
     //Если мы нашли таковой, то отправляем его на "отработку" с помощью action
@@ -65,13 +65,15 @@ void NKR_send(void)
             }
 
             //Отправляем отклик о получении на НКР
+            
             pack_recived_union msg = BLA_packer.pack_pdr(CTT_ID, crc_pack);
             SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
             //SERIAL_TM.println("PRC отправлен на НКР");
 
             //Запоминаем одижаемое действие от БЛА
             waiting_action_BLA = TCM_ID;
-
+            //Запоминаем одижаемое действие от НКР
+            waiting_action_NKR = MCM_ID;
             //Поле отработки case с нужным id, занулем его в массиве
             //чтобы запомнить, что он выполнен
             array_NKR[f_NKR] = 0;
@@ -200,14 +202,16 @@ void NKR_send(void)
       case (NPM_ID):          //"Параметры навигации"
         {
           crc_pack = packet_sender_NKR[30];
-          if (!BLA_unpacker.BLA_take_id(PDR_ID, NPM_ID))
+          //flag_NPM = true;
+          while (!BLA_unpacker.BLA_take_id(PDR_ID, NPM_ID))
           {
             BLA_sender.send_to_BLA(packet_sender_NKR);
           }
 
           pack_recived_union msg = BLA_packer.pack_pdr(NPM_ID, crc_pack);
           SERIAL_NKR.write(msg.byte_form, sizeof(msg.byte_form));
-
+          
+          flag_NPM = false;
           //Поле отработки case с нужным id, занулем его в массиве
           //чтобы запомнить, что он выполнен
           array_NKR[f_NKR] = 0;
@@ -400,14 +404,14 @@ void BLA_send()
     //Ищем ненулевой элемент массива
     if (array_BLA[f_BLA] != 0) {
       action_BLA = array_BLA[f_BLA];
-      //      SERIAL_TM.println("action" + action);
+      //SERIAL_TM.println("action" + action);
       for (byte r = 0; r < 35; r++)
       {
         packet_sender_BLA[r] = big_array_BLA[f_BLA][r];
-        //        SERIAL_TM.print(packet_sender[r], HEX);
-        //        SERIAL_TM.print("\t");
+        //SERIAL_TM.print(packet_sender[r], HEX);
+        //SERIAL_TM.print("\t");
       }
-      //      SERIAL_TM.println();
+      //SERIAL_TM.println();
     }
     else {}
   }
@@ -615,8 +619,13 @@ void take_NPM_pack()
 {
   if (waiting_action_NKR == MCM_ID)
   {
+    if (!flag_NPM)
+    {
     //Отправляем запрос на получения пакета NPM
     short_msg_union msg_NKR = BLA_packer.pack_tnp();
     SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
+    SERIAL_TM.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
+    flag_NPM = true;
+    } else {}
   } else {}
 }

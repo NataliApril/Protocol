@@ -1,5 +1,5 @@
-#define SERIAL_BLA Serial1
-#define SERIAL_TM Serial
+#define SERIAL_BLA Serial
+#define SERIAL_TM Serial3
 #define SERIAL_NKR Serial2
 
 //   Формирование паектов
@@ -49,6 +49,8 @@ byte lenght_BLA[number_of_packets] = {0, 0, 0, MCM_LENGTH, 0, 0, 0, 0, NPM_LENGT
 //переменные дл выбоора режимов передачи пакета
 boolean Manual = false;
 boolean Auto = false;
+
+bool flag_NPM = false;
 
 //переменные для разбора полученных пакетов
 byte recive_bytes[80] = {0};
