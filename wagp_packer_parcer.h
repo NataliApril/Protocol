@@ -38,6 +38,11 @@ class wagp_packer
       return msg;
     };
 
+    short_msg_union pack_tnp()
+    {
+      return pack_short_msg(TNP_ID);
+    };
+    
     short_msg_union pack_ctt()
     {
       return pack_short_msg(CTT_ID);
@@ -232,21 +237,21 @@ class unpacker
           }
         }
         //Сверяем длины пакетов НКР
-        for (byte q = 0; q < 11; q++) {
+        for (byte q = 0; q < number_of_packets; q++) {
           lenght[q] = lenght_NKR[q];
         }
       } else if (device.equals("BLA")) {
         if (SERIAL_BLA.readBytes(recive_bytes, sizeof(recive_bytes)))
         {
           SERIAL_TM.println("Прочитано:" + device);
-          //          for (int i = 0; i < (sizeof(recive_bytes)); i++)
-          //          {
-          //            SERIAL_TM.print(recive_bytes[i], HEX);
-          //            SERIAL_TM.print("\t");
-          //          }
+          //for (int i = 0; i < (sizeof(recive_bytes)); i++)
+          //{
+          //  SERIAL_TM.print(recive_bytes[i], HEX);
+          //  SERIAL_TM.print("\t");
+          //}
         }
         //Сверяем длины пакетов БЛА
-        for (byte q = 0; q < 11; q++) {
+        for (byte q = 0; q < number_of_packets; q++) {
           lenght[q] = lenght_BLA[q];
         }
       }
@@ -338,17 +343,17 @@ class unpacker
         } else if (status == 8) {
           if (recive_bytes[i - 1] == PACK_END_2) {
             pack_bytes[j] = recive_bytes[i - 1];
-            //            SERIAL_TM.println();                              //когда пакет собрался, выводим его
-            //            SERIAL_TM.println("Собранный пакет:");
-            //            for (int r = 0; r <= j; r ++) {
-            //              SERIAL_TM.print(pack_bytes[r], HEX);
-            //              SERIAL_TM.print("\t");
-            //            }
-            //            SERIAL_TM.println();
-            //            SERIAL_TM.print("Cчетчик i: ");
-            //            SERIAL_TM.println(i);
-            //            SERIAL_TM.print("ID пакета:");
-            //            SERIAL_TM.println(pack_bytes[3], HEX);
+            //SERIAL_TM.println();                              //когда пакет собрался, выводим его
+            //SERIAL_TM.println("Собранный пакет:");
+            //for (int r = 0; r <= j; r ++) {
+            //  SERIAL_TM.print(pack_bytes[r], HEX);
+            //  SERIAL_TM.print("\t");
+            //}
+            //SERIAL_TM.println();
+            //SERIAL_TM.print("Cчетчик i: ");
+            //SERIAL_TM.println(i);
+            //SERIAL_TM.print("ID пакета:");
+            //SERIAL_TM.println(pack_bytes[3], HEX);
 
             if (device.equals("NKR")) {
 
@@ -681,12 +686,12 @@ class unpacker
             SERIAL_TM.print("\t");
             SERIAL_TM.print(msg.msg_form.coordinates[2], 6);
             SERIAL_TM.print("\t");
-            //            SERIAL_TM.print(msg.msg_form.orient[0], 6);
-            //            SERIAL_TM.print("\t");
-            //            SERIAL_TM.print(msg.msg_form.orient[1], 6);
-            //            SERIAL_TM.print("\t");
-            //            SERIAL_TM.print(msg.msg_form.orient[2], 6);
-            //            SERIAL_TM.print("\t");
+            //SERIAL_TM.print(msg.msg_form.orient[0], 6);
+            //SERIAL_TM.print("\t");
+            //SERIAL_TM.print(msg.msg_form.orient[1], 6);
+            //SERIAL_TM.print("\t");
+            //SERIAL_TM.print(msg.msg_form.orient[2], 6);
+            //SERIAL_TM.print("\t");
             SERIAL_TM.print(msg.msg_form.crc, HEX);
             SERIAL_TM.print("\t");
             SERIAL_TM.print(msg.msg_form.terminator_1, HEX);
@@ -746,8 +751,8 @@ class unpacker
         if (array_BLA_id[s] == pack_id)
         {
           exist = true;
-          //      SERIAL_TM.println();
-          //      SERIAL_TM.println("array_BLA[s] = " + String(array_BLA[s], HEX));
+          //SERIAL_TM.println();
+          //SERIAL_TM.println("array_BLA[s] = " + String(array_BLA[s], HEX));
           array_BLA_id[s] = 0;
           //      SERIAL_TM.println("array_BLA[s] = " + String(array_BLA[s], HEX));
           for (byte g = 0; g < 35; g++)
@@ -832,8 +837,8 @@ class wagp_sender
             short_msg_union msg;
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //            SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
         case TCM_ID:
@@ -848,25 +853,17 @@ class wagp_sender
             short_msg_union msg;
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //            SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
         case MCM_ID:
           {
             mcm_msg_union msg;
             memcpy(msg.byte_form, pack_to_send, sizeof(mcm_msg));
-            //            for (int p = 0; p < 35; p++)
-            //            {
-            //              SERIAL_TM.print(pack_to_send[p], HEX);
-            //              SERIAL_TM.print("\t");
-            //            }
-            //            SERIAL_TM.println();
-            //
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //            SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
-            //            delay(1000);
+            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
         case LRQ_ID:
@@ -888,22 +885,24 @@ class wagp_sender
             short_msg_union msg;
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //            SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
         case LCM_ID:
           {
             short_msg_union msg;
-            memcpy(msg.byte_form, data, sizeof(short_msg));
+            memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
 
             break;
           }
         case NPM_ID:
           {
             npm_msg_union msg;
-            memcpy(msg.byte_form, data, sizeof(npm_msg));
-
+            memcpy(msg.byte_form, pack_to_send, sizeof(npm_msg));
+            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
         case TPM_ID:
@@ -913,7 +912,7 @@ class wagp_sender
             msg.msg_form.data_len = 14;
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //            SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
         case PDR_ID:
