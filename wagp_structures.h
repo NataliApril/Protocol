@@ -114,6 +114,13 @@ byte f_BLA = 0;
 
 float coords[3] = {0, 0, 0};
 
+//Таймер отправки запросов на получение пакетов NPM
+unsigned long timmer;
+//Интерва времения в мс для запросов пакетов NPM
+unsigned long interval;
+//таймер обновлегия таймера отправки запросов
+boolean flag_timmer = true;
+
 //Описание структур
 struct short_msg
 {
