@@ -31,6 +31,14 @@ void NKR_send(void)
   //Получили массив id  пришедших пакетов в массив array_NKR
   byte* array_NKR = BLA_unpacker.find_pack("NKR");
 
+  SERIAL_TM.println("array_NKR:");
+  for (byte s = 0; s< 5; s++)
+  {
+    SERIAL_TM.print(array_NKR[s], HEX);
+    SERIAL_TM.print("\t");
+  }
+  SERIAL_TM.println();
+  
   if (f_NKR < 5)
   {
     //Ищем ненулевой элемент массива
@@ -414,6 +422,14 @@ void BLA_send()
   //Получили массив id  пришедших пакетов в массив array_NKR
   byte* array_BLA = BLA_unpacker.find_pack("BLA");
 
+  SERIAL_TM.println("array_BLA:");
+  for (byte s = 0; s< 5; s++)
+  {
+    SERIAL_TM.print(array_BLA[s], HEX);
+    SERIAL_TM.print("\t");
+  }
+  SERIAL_TM.println();
+  
   if (f_BLA < 5)
   {
     //    SERIAL_TM.println("action BLA_2 =" + String(action_BLA));
@@ -485,9 +501,9 @@ void BLA_send()
         {
           if (waiting_action_BLA == action_BLA)
           {
-            pack_recived_union msg_BLA = BLA_packer.pack_pdr(RTM_ID, 0);                 //отправляю "пакет получен"
-            SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
-            SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
+            //pack_recived_union msg_BLA = BLA_packer.pack_pdr(RTM_ID, 0);                 //отправляю "пакет получен"
+            //SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
+            //SERIAL_BLA.write(msg_BLA.byte_form, sizeof(msg_BLA.byte_form));
 
             short_msg_union msg_NKR = BLA_packer.pack_rtm();
             SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
@@ -655,7 +671,7 @@ void BLA_send()
 void take_NPM_pack()
 {
   //Задаем промежуток вемени для отправки запросов на получение пактов NPM
-  interval = 10000; //Знамение врнемени в мс
+  interval = 5000; //Знамение врнемени в мс
 
   if (waiting_action_NKR == MCM_ID)
   {
