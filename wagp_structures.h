@@ -1,5 +1,5 @@
-#define SERIAL_BLA Serial
-#define SERIAL_TM Serial3
+#define SERIAL_BLA Serial1
+#define SERIAL_TM Serial
 #define SERIAL_NKR Serial2
 
 //   Формирование паектов
