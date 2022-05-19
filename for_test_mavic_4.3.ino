@@ -19,7 +19,7 @@ void loop()
   //BLA_unpacker.take_packs();
   NKR_send();
   BLA_send();
-  //take_NPM_pack();
+  take_NPM_pack();
 }
 
 
@@ -639,18 +639,31 @@ void BLA_send()
   }
 }
 
+
 //отправка запросов
 void take_NPM_pack()
 {
+  //Задаем промежуток вемени для отправки запросов на получение пактов NPM
+  interval = 10000; //Знамение врнемени в мс
+
   if (waiting_action_NKR == MCM_ID)
   {
-    if (!flag_NPM)
+    if (flag_timmer)
     {
-      //Отправляем запрос на получения пакета NPM
-      short_msg_union msg_NKR = BLA_packer.pack_tnp();
-      SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
-      SERIAL_TM.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
-      flag_NPM = true;
+      timmer = millis();
+      flag_timmer = !flag_timmer;
+    }
+    if ((millis() - timmer) > interval)
+    {
+      if (!flag_NPM)
+      {
+        //Отправляем запрос на получения пакета NPM
+        short_msg_union msg_NKR = BLA_packer.pack_tnp();
+        SERIAL_NKR.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
+        SERIAL_TM.write(msg_NKR.byte_form, sizeof(msg_NKR.byte_form));
+        flag_NPM = true;
+      } else {}
+      flag_timmer = !flag_timmer;
     } else {}
   } else {}
 }
