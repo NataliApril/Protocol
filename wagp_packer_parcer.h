@@ -42,7 +42,7 @@ class wagp_packer
     {
       return pack_short_msg(TNP_ID);
     };
-    
+
     short_msg_union pack_ctt()
     {
       return pack_short_msg(CTT_ID);
@@ -838,7 +838,7 @@ class wagp_sender
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+
             break;
           }
         case TCM_ID:
@@ -854,7 +854,7 @@ class wagp_sender
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+
             break;
           }
         case MCM_ID:
@@ -863,7 +863,7 @@ class wagp_sender
             memcpy(msg.byte_form, pack_to_send, sizeof(mcm_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+
             break;
           }
         case LRQ_ID:
@@ -886,7 +886,7 @@ class wagp_sender
             memcpy(msg.byte_form, pack_to_send, sizeof(short_msg));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
-            //SERIAL_TM.write(msg.byte_form, sizeof(msg.byte_form));
+            
             break;
           }
         case LCM_ID:
@@ -918,8 +918,9 @@ class wagp_sender
         case PDR_ID:
           {
             pack_recived_union msg;
-            memcpy(msg.byte_form, data, sizeof(pack_recived));
-
+            memcpy(msg.byte_form, pack_to_send, sizeof(pack_recived));
+            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
+            SERIAL_BLA.write(msg.byte_form, sizeof(msg.byte_form));
             break;
           }
       }
